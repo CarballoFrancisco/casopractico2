@@ -1,0 +1,25 @@
+--
+- name: Comprobar variables cargadas desde secrets.yml
+  debug:
+    msg: "ACR Login: {{ acr_username }} | {{ acr_login_server }} | Contraseña: {{ acr_password }}"
+
+- name: Hacer login en ACR
+  containers.podman.podman_login:
+    registry: "{{ acr_login_server }}"
+    username: "{{ acr_username }}"
+    password: "{{ acr_password }}"
+
+- name: Descargar imagen base de Nginx
+  containers.podman.podman_image:
+    name: docker.io/library/nginx:latest
+
+- name: Etiquetar imagen para subir al ACR
+  containers.podman.podman_tag:
+    image: docker.io/library/nginx:latest
+    target_names:
+      - "{{ acr_login_server }}/webapp/casopractico2"
+
+- name: Subir imagen al ACR
+  containers.podman.podman_image:
+    name: "{{ acr_login_server }}/webapp/casopractico2"
+    push: true
