@@ -1,0 +1,28 @@
+---
+- name: Crear namespace para la aplicación
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: unir
+
+- name: Crear secreto para autenticación con ACR
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: acr-secret
+        namespace: unir
+      type: kubernetes.io/dockerconfigjson
+      data:
+        .dockerconfigjson: "{{ acr_dockerconfigjson }}"
+
+- name: Desplegar aplicación con almacenamiento persistente
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'app_template.yml.j2') }}"
+    namespace: unir
