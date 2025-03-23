@@ -1,0 +1,41 @@
+---
+- name: Instalar paquetes necesarios
+  become: yes
+  apt:
+    name:
+      - podman
+      - apache2-utils  # Necesario para crear el archivo .htpasswd
+    state: present
+    update_cache: yes
+
+- name: Hacer login en el ACR desde la VM
+  containers.podman.podman_login:
+    registry: "{{ acr_login_server }}"
+    username: "{{ acr_username }}"
+    password: "{{ acr_password }}"
+
+- name: Crear directorio para el contenido web
+  become: yes
+  file:
+    path: /srv/nginx
+    state: directory
+    mode: '0755'
+
+- name: Crear archivo de autenticación (.htpasswd)
+  become: yes
+  community.general.htpasswd:
+    path: /srv/nginx/.htpasswd
+    name: usuario
+    password: contraseña123
+    crypt_scheme: apr_md5_crypt  # Se usa este esquema para evitar errores al generar el hash
+
+- name: Desplegar contenedor Nginx con autenticación y HTTPS
+  containers.podman.podman_container:
+    name: nginx_web
+    image: "{{ acr_login_server }}/webapp/casopractico2"
+    state: started
+    ports:
+      - "8443:8443"
+    volumes:
+      - /srv/nginx:/usr/share/nginx/html:Z
+    restart_policy: always
