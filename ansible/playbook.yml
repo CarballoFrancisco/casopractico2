@@ -1,1 +1,21 @@
+  GNU nano 7.2                                                            playbook.yml                                                                      ---
+- name: Subir imágenes al ACR
+  hosts: localhost
+  vars_files:
+    - secrets.yml
+  tasks:
+    - name: Subir imágenes al ACR
+      include_role:
+        name: acr
+
+- name: Configurar la VM con Podman y desplegar Nginx
+  hosts: webapp
+  vars_files:
+    - secrets.yml
+  tasks:
+    - name: Instalar Podman y desplegar web server
+      include_role:
+        name: vm
+
+
 
