@@ -1,0 +1,5 @@
+*.exe
+# Ignorar archivos de estado de Terraform
+terraform.tfstate
+terraform.tfstate.*
+
